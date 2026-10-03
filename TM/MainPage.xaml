@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:TM.Converters"
+             x:Class="TM.MainPage"
+             Title="Task Manager"
+             BackgroundColor="#F8F9FA">
+
+    <ContentPage.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <converters:BoolToIconConverter x:Key="BoolToIconConverter" />
+        <converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+        <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter" />
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="25" Spacing="20">
+
+            <!-- Заголовок приложения -->
+            <Label Text="Task Manager" 
+                   FontSize="28" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center"
+                   TextColor="#2C3E50" />
+
+            <!-- Панель добавления новых задач -->
+            <Border BackgroundColor="White"
+                    Stroke="LightGray"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="15">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto">
+                    <Editor x:Name="TaskEditor"
+                            Placeholder="What needs to be done?" 
+                            Text="{Binding NewTaskTitle}"
+                            Grid.Column="0"
+                            BackgroundColor="Transparent"
+                            TextColor="#2C3E50"
+                            FontSize="16"
+                            AutoSize="TextChanges"
+                            HeightRequest="45"
+                            MinimumHeightRequest="45"
+                            Margin="0,0,15,0" />
+
+                    <!-- Круглая кнопка добавления -->
+                    <Button Command="{Binding AddTaskCommand}"
+                            Grid.Column="1"
+                            BackgroundColor="#4CAF50"
+                            TextColor="White"
+                            FontSize="20"
+                            WidthRequest="50"
+                            HeightRequest="50"
+                            CornerRadius="25"
+                            Text="+"
+                            FontAttributes="Bold"
+                            VerticalOptions="Start" />
+                </Grid>
+            </Border>
+
+            <!-- Список задач -->
+            <CollectionView ItemsSource="{Binding Tasks}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Карточка задачи -->
+                        <Border BackgroundColor="White"
+                                Stroke="LightGray"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="0"
+                                Margin="0,0,0,10">
+
+                            <Grid Padding="15" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10"
+                                  RowDefinitions="Auto" VerticalOptions="Start">
+
+                                <!-- Название задачи -->
+                                <Label Text="{Binding Title}" 
+                                       Grid.Column="0"
+                                       VerticalOptions="Start"
+                                       HorizontalOptions="Start"
+                                       FontSize="16"
+                                       LineBreakMode="WordWrap">
+                                    <Label.TextColor>
+                                        <Binding Path="IsCompleted">
+                                            <Binding.Converter>
+                                                <converters:BoolToTextColorConverter />
+                                            </Binding.Converter>
+                                        </Binding>
+                                    </Label.TextColor>
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label"
+                                                     Binding="{Binding IsCompleted}"
+                                                     Value="True">
+                                            <Setter Property="TextDecorations" Value="Strikethrough" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                                <!-- Кнопка выполнения/отмены (галочка) -->
+                                <Button Text="{Binding IsCompleted, Converter={StaticResource BoolToIconConverter}}"
+                                        Command="{Binding Path=BindingContext.ToggleTaskCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                        CommandParameter="{Binding .}"
+                                        Grid.Column="1"
+                                        BackgroundColor="{Binding IsCompleted, Converter={StaticResource BoolToColorConverter}}"
+                                        TextColor="White"
+                                        WidthRequest="40"
+                                        HeightRequest="40"
+                                        CornerRadius="20"
+                                        FontSize="14"
+                                        FontAttributes="Bold"
+                                        VerticalOptions="Start"
+                                        HorizontalOptions="End" />
+
+                                <!-- Кнопка удаления (мусор) -->
+                                <Button Text="🗑️"
+                                        Command="{Binding Path=BindingContext.DeleteTaskCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                        CommandParameter="{Binding .}"
+                                        Grid.Column="2"
+                                        BackgroundColor="#FF6B6B"
+                                        TextColor="White"
+                                        WidthRequest="40"
+                                        HeightRequest="40"
+                                        CornerRadius="20"
+                                        FontSize="14"
+                                        VerticalOptions="Start"
+                                        HorizontalOptions="End" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Сообщение если нет задач -->
+            <Label Text="No tasks yet. Add your first task above! 📝"
+                   IsVisible="{Binding Tasks.Count, Converter={StaticResource IntToBoolConverter}}"
+                   HorizontalOptions="Center"
+                   TextColor="#7F8C8D"
+                   FontSize="16"
+                   Margin="0,50,0,0" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
